@@ -1660,7 +1660,7 @@
                     body: JSON.stringify({
                         chat_id: telegramSettings.chatId,
                         text: summaryText,
-                        parse_mode: 'Markdown'
+                        parse_mode: 'HTML'
                     })
                 });
                 
@@ -1679,22 +1679,30 @@
 
         // Generate daily summary text for Telegram
         async function generateDailySummary() {
-            // Calculate stats from current data
             let totalTasks = 0;
             let completedTasks = 0;
             let calories = 0;
-            
-            const groupStats = [];
-            
+            const fullyCompletedGroups = [];
+
+            const categoryEmojis = {
+                "Meals": "🍽️",
+                "Mental Activities": "🧠",
+                "Physical Activities": "💪",
+                "Productivity": "📚",
+                "Personal Care": "🛁",
+                "Home Care": "🏠",
+                "Habits": "🚭",
+                "Creativity": "🎨"
+            };
+
             routineData.forEach(group => {
                 let groupTasks = 0;
                 let groupCompleted = 0;
-                
+
                 group.items.forEach(item => {
                     if (item.type === 'task') {
                         groupTasks++;
                         totalTasks++;
-                        
                         if (item.checked) {
                             groupCompleted++;
                             completedTasks++;
@@ -1703,114 +1711,33 @@
                         calories = parseInt(item.value) || 0;
                     }
                 });
-                
-                // Only include groups with tasks
-                if (groupTasks > 0) {
-                    const completionPercent = Math.round((groupCompleted / groupTasks) * 100);
-                    groupStats.push({
-                        title: group.title,
-                        completion: completionPercent,
-                        completed: groupCompleted,
-                        total: groupTasks
-                    });
+
+                // Добавляем эмодзи группы, только если все задачи выполнены
+                if (groupTasks > 0 && groupCompleted === groupTasks) {
+                    fullyCompletedGroups.push(categoryEmojis[group.title] || "📋");
                 }
             });
-            
-            // Sort groups by completion percentage (descending)
-            groupStats.sort((a, b) => b.completion - a.completion);
-            
-            // Format the date
-            const today = new Date();
-            const dateStr = today.toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-            });
-            
-            // Calculate overall completion
-            const overallCompletion = Math.round((completedTasks / totalTasks) * 100);
-            
-            // Generate emoji based on completion
-            let emoji = '😐';
-            if (overallCompletion >= 90) emoji = '🥇';
-            else if (overallCompletion >= 75) emoji = '🥈';
-            else if (overallCompletion >= 50) emoji = '🥉';
-            else if (overallCompletion < 30) emoji = '😟';
-            
-            // Build the summary text
-            let summaryText = `*Daily Routine Summary* ${emoji}\n`;
-            summaryText += `*Date:* ${dateStr}\n\n`;
-            
-            summaryText += `*Overall Completion:* ${completedTasks}/${totalTasks} (${overallCompletion}%)\n`;
-            if (calories > 0) {
-                summaryText += `*Calories:* ${calories}\n`;
-            }
-            
-            summaryText += '\n*Category Breakdown:*\n';
-            
-            // Add group stats
-            groupStats.forEach(group => {
-                const groupEmoji = group.completion === 100 ? '✅' : 
-                                 group.completion >= 75 ? '👍' :
-                                 group.completion >= 50 ? '👌' : '❌';
-                                 
-                summaryText += `${groupEmoji} *${group.title}:* ${group.completed}/${group.total} (${group.completion}%)\n`;
-            });
-            
-            // Add notes and achievements
-            summaryText += '\n*Achievements:*\n';
-            
-            if (completedTasks === totalTasks) {
-                summaryText += '🏆 Perfect day! All tasks completed\n';
-            } else if (completedTasks >= totalTasks * 0.75) {
-                summaryText += '🥇 Excellent progress! Most tasks completed\n';
-            } else if (completedTasks >= totalTasks * 0.5) {
-                summaryText += '🥈 Good job! Half or more tasks completed\n';
+
+            const overallCompletion = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+            let medalEmoji = '😐';
+            if (overallCompletion >= 90) medalEmoji = '🥇';
+            else if (overallCompletion >= 75) medalEmoji = '🥈';
+            else if (overallCompletion >= 50) medalEmoji = '🥉';
+            else if (overallCompletion < 30) medalEmoji = '😟';
+
+            // Формируем текст для цитаты с экранированием
+            let summaryText = `${medalEmoji} <b>${overallCompletion}%</b>`;
+            if (fullyCompletedGroups.length > 0) {
+                summaryText += ` ${fullyCompletedGroups.join(" ")}\n`;
             } else {
-                summaryText += '🥉 Made progress on your daily routine\n';
+                summaryText += `\n`;
             }
-            
-            // Add habit streaks if available
-            const habitsGroup = routineData.find(group => group.title === 'Habits');
-            if (habitsGroup) {
-                const completedHabits = habitsGroup.items.filter(item => 
-                    item.type === 'task' && item.checked
-                ).length;
-                
-                const totalHabits = habitsGroup.items.filter(item => 
-                    item.type === 'task'
-                ).length;
-                
-                if (completedHabits === totalHabits && totalHabits > 0) {
-                    summaryText += '💪 Maintained all your positive habits today!\n';
-                }
-            }
-            
-            // Physical activity
-            const physicalGroup = routineData.find(group => group.title === 'Physical Activities');
-            if (physicalGroup) {
-                const didTraining = physicalGroup.items.some(item => 
-                    item.type === 'task' && item.label === 'Training' && item.checked
-                );
-                
-                if (didTraining) {
-                    summaryText += '🏋️ Stayed active with your training today\n';
-                }
-            }
-            
-            // Mental activity
-            const mentalGroup = routineData.find(group => group.title === 'Mental Activities');
-            if (mentalGroup) {
-                const didReading = mentalGroup.items.some(item => 
-                    item.type === 'task' && item.label === 'Reading' && item.checked
-                );
-                
-                if (didReading) {
-                    summaryText += '📚 Fed your mind with reading today\n';
-                }
-            }
-            
+            summaryText += `🍽 <b>${calories} cal</b>`;
+
+            // Оборачиваем в блок цитаты для MarkdownV2
+            summaryText = `\n<blockquote>${summaryText}</blockquote>\n`;
+
             return summaryText;
         }
 
