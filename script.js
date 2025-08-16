@@ -1,4 +1,3 @@
-// Initialize routine groups and items
 const routineData = [
     {
         title: "Meals",
@@ -74,7 +73,6 @@ const routineData = [
     }
 ];
 
-// Function to update date and time
 function updateDateTime() {
     const now = new Date();
     
@@ -92,7 +90,6 @@ function updateDateTime() {
     }
 }
 
-// Function to render routine groups and items
 function renderRoutineGroups() {
     const column1 = document.getElementById('routine-column-1');
     const column2 = document.getElementById('routine-column-2');
@@ -214,7 +211,6 @@ function renderRoutineGroups() {
     });
 }
 
-// Function to save all routine data to localStorage
 function saveAllData() {
     try {
         localStorage.setItem('currentRoutineData', JSON.stringify(routineData));
@@ -226,7 +222,6 @@ function saveAllData() {
     }
 }
 
-// Function to load all data, including Telegram configuration
 function loadAllData() {
     try {
         const savedData = localStorage.getItem('currentRoutineData');
@@ -247,7 +242,6 @@ function loadAllData() {
     }
 }
 
-// Function to load routine data from localStorage
 function loadRoutineData() {
     try {
         const savedData = localStorage.getItem('currentRoutineData');
@@ -261,7 +255,6 @@ function loadRoutineData() {
     }
 }
 
-// Helper function to update routineData from saved data
 function updateRoutineDataFromSaved(savedData) {
     savedData.forEach((savedGroup, groupIndex) => {
         if (groupIndex < routineData.length) {
@@ -275,7 +268,6 @@ function updateRoutineDataFromSaved(savedData) {
     });
 }
 
-// Function to reset all checkboxes
 function resetCheckboxes() {
     try {
         routineData.forEach(group => {
@@ -293,7 +285,6 @@ function resetCheckboxes() {
     }
 }
 
-// Function to reset routine data for a new day
 function resetRoutineData() {
     try {
         saveAllData();
@@ -317,7 +308,6 @@ function resetRoutineData() {
     }
 }
 
-// Handle tab switching
 function handleTabSwitch() {
     const tabs = document.querySelectorAll('.routine-tab');
     const views = [
@@ -341,7 +331,6 @@ function handleTabSwitch() {
     });
 }
 
-// Show toast notification
 function showToast(message, isError = false) {
     const toast = document.getElementById('toast-notification');
     toast.textContent = message;
@@ -359,26 +348,22 @@ function showToast(message, isError = false) {
     }, 3000);
 }
 
-// Telegram configuration
 let telegramConfig = {
     token: '',
     channelId: ''
 };
 
-// Function to format Telegram message
 function getFormattedMessage() {
     const now = new Date();
     const dateString = `${String(now.getDate()).padStart(2, '0')}.${String(now.getMonth() + 1).padStart(2, '0')}, ${now.toLocaleString('ru-RU', { weekday: 'long' })}`;
     
     let emojis = [];
     
-    // Check Mental Activities (all tasks must be checked)
     const mentalActivities = routineData.find(group => group.title === "Mental Activities");
     if (mentalActivities && mentalActivities.items.every(item => item.checked)) {
         emojis.push('🧠');
     }
     
-    // Check individual tasks
     if (routineData.find(group => group.title === "Mental Activities")?.items.find(item => item.label === "Chess game")?.checked) {
         emojis.push('♟');
     }
@@ -389,25 +374,21 @@ function getFormattedMessage() {
         emojis.push('🏋️‍♂️');
     }
     
-    // Check Personal Care tasks
     const personalCare = routineData.find(group => group.title === "Personal Care");
     if (personalCare && ['Shave', 'Wash hair', 'Take a shower'].every(task => 
         personalCare.items.find(item => item.label === task)?.checked)) {
         emojis.push('🛁');
     }
     
-    // Check Home Care (all tasks must be checked)
     const homeCare = routineData.find(group => group.title === "Home Care");
     if (homeCare && homeCare.items.every(item => item.checked)) {
         emojis.push('🧹');
     }
     
-    // Check Habits
     if (routineData.find(group => group.title === "Habits")?.items.find(item => item.label === "No cigarettes")?.checked) {
         emojis.push('🚭');
     }
     
-    // Check For General Knowledge
     const generalKnowledge = routineData.find(group => group.title === "For General Knowledge");
     if (generalKnowledge && ['Random Wiki', 'Random Lurk'].every(task => 
         generalKnowledge.items.find(item => item.label === task)?.checked)) {
@@ -417,18 +398,15 @@ function getFormattedMessage() {
         emojis.push('📜');
     }
     
-    // Check Productivity
     if (routineData.find(group => group.title === "Productivity")?.items.find(item => item.label === "Programming")?.checked) {
         emojis.push('💻');
     }
     
-    // Calculate total calories (assuming 0 for now as no calorie input)
     const calories = 0;
     
     return `${dateString}\n${emojis.join(' ')}\n🍽 ${calories} cal`;
 }
 
-// Function to send data to Telegram
 function sendDataToTelegram() {
     if (!telegramConfig.token || !telegramConfig.channelId) {
         console.error('Telegram configuration is incomplete');
