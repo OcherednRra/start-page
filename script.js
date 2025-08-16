@@ -14,7 +14,6 @@ const routineData = [
         column: 1,
         items: [
             { type: "task", label: "Reading", checked: false },
-            { type: "task", label: "Mental arithmetic", checked: false },
             { type: "task", label: "Math", checked: false },
             { type: "task", label: "Chess game", checked: false },
         ]
@@ -26,14 +25,7 @@ const routineData = [
             { type: "task", label: "Training", checked: false },
         ]
     },
-    {
-        title: "Productivity",
-        column: 1,
-        items: [
-            { type: "task", label: "Studying", checked: false },
-            { type: "task", label: "Programming", checked: false },
-        ]
-    },
+
     {
         title: "Personal Care",
         column: 2,
@@ -52,25 +44,15 @@ const routineData = [
             { type: "task", label: "Clean room", checked: false }
         ]
     },
-    {
-        title: "Habits",
+	
+	    {
+        title: "Productivity",
         column: 2,
         items: [
-            { type: "task", label: "No cigarettes", checked: false },
-            { type: "task", label: "No alcohol", checked: false },
-            { type: "task", label: "Nofap", checked: false }
+            { type: "task", label: "Working", checked: false },
+            { type: "task", label: "Programming", checked: false },
         ]
     },
-    {
-        title: "For General Knowledge",
-        column: 2,
-        items: [
-            { type: "task", label: "Post for channel", checked: false },
-            { type: "task", label: "Random Wiki", checked: false },
-            { type: "task", label: "Random Lurk", checked: false },
-            { type: "task", label: "Random Poem", checked: false },
-        ]
-    }
 ];
 
 function updateDateTime() {
@@ -443,7 +425,6 @@ function sendDataToTelegram() {
     });
 }
 
-// Function to update Telegram form
 function updateTelegramForm() {
     const tokenInput = document.getElementById('telegram-token');
     const channelInput = document.getElementById('telegram-channel');
@@ -454,7 +435,6 @@ function updateTelegramForm() {
     }
 }
 
-// Function to save Telegram settings
 function saveTelegramSettings() {
     const tokenInput = document.getElementById('telegram-token');
     const channelInput = document.getElementById('telegram-channel');
@@ -473,20 +453,17 @@ function saveTelegramSettings() {
     hideTelegramModal();
 }
 
-// Function to show Telegram modal
 function showTelegramModal() {
     const modal = document.getElementById('telegram-modal');
     modal.classList.add('active');
     updateTelegramForm();
 }
 
-// Function to hide Telegram modal
 function hideTelegramModal() {
     const modal = document.getElementById('telegram-modal');
     modal.classList.remove('active');
 }
 
-// Function to initialize the app
 function initApp() {
     try {
         loadAllData();
@@ -512,5 +489,4 @@ function initApp() {
     }
 }
 
-// Run the app when DOM is loaded
 document.addEventListener('DOMContentLoaded', initApp);
